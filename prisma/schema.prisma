@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+  // output
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Branch {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  location    String    @unique
+  users       User[]
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
+  password    String
+  isAdmin     Boolean   @default(false)
+  branch      Branch?   @relation(fields: [branchId], references: [id])
+  branchId    Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Order {
+  id          Int            @id @default(autoincrement())
+  clientName  String
+  clientTel   String
+  clientLocation String
+  status      String         @default("PENDING")
+  branch      Branch         @relation(fields: [branchId], references: [id])
+  branchId    Int
+  products    OrderProduct[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Product {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  price       Float
+  description String?
+  imgUrls     String?
+  orders      OrderProduct[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model OrderProduct {
+  id        Int     @id @default(autoincrement())
+  order     Order   @relation(fields: [orderId], references: [id])
+  orderId   Int
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([orderId, productId])
+}
